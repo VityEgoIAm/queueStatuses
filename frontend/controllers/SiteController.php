@@ -15,6 +15,8 @@ use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
+use frontend\models\QueueStatusesForm;
+use frontend\services\QueueStatusesService;
 
 /**
  * Site controller
@@ -75,7 +77,21 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $model = new QueueStatusesForm();
+
+        if ($this->request->isPost) {
+            if ($model->load($this->request->post()) && $model->validate()) {
+                $service = new QueueStatusesService($model);
+                if($service->save()) {
+                    Yii::$app->session->setFlash('success', 'Success');  
+                }
+                return $this->refresh();
+            }
+        }
+
+        return $this->render('index', [
+            'model' => $model,
+        ]);
     }
 
     /**
